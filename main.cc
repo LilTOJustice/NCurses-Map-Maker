@@ -217,7 +217,7 @@ int main() {
             if (ch == 'y' || ch == '\n') break;
             curs_set(1);
         }
-        else if (insertmode && (ch == '\n' || ch == 27)) {
+        else if (insertmode && ch == '\n') { //disable insert mode
             insertmode = false;
             mvprintw(31, max_x - 37, "i: Insert mode                    ");
         }
