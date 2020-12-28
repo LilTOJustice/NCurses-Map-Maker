@@ -13,6 +13,9 @@ Easily create your own text map files with the NCurses Map Maker
  | |  | |/ ___ \| . \| |___|  _ <
  |_|  |_/_/   \_\_|\_\_____|_| \_\
 ```
+
+<span style="color:red">*Requires the lncursesw library!*</span>.
+
 Important things to know:
 - This program supports any unicode characters displayable
 - Make sure to change the "symbols" file if you want to add more placeable objects
