@@ -18,13 +18,20 @@ Important things to know:
 - Make sure to change the "symbols" file if you want to add more placeable objects
 
 Controls:
-\nArrow keys: Traverse map
-\nW/S: change symbol up/down
-\nA/D: change symbol page up/down
-\nEnter/Space: Place character
-\nX/Backspace: Remove character
-\ni: Insert Mode (for entering text)
-\nENTER: Exit insert mode
+
+Arrow keys: Traverse map
+
+W/S: change symbol up/down
+
+A/D: change symbol page up/down
+
+Enter/Space: Place character
+
+X/Backspace: Remove character
+
+i: Insert Mode (for entering text)
+
+ENTER: Exit insert mode
 
 Features including mouse support and a functioning menu coming soon
 
