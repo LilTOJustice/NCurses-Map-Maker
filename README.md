@@ -14,7 +14,7 @@ Easily create your own text map files with the NCurses Map Maker
  |_|  |_/_/   \_\_|\_\_____|_| \_\
 ```
 
-<span style="color:red">*Requires the lncursesw library!*</span>.
+*Requires the ncursesw library!*
 
 Important things to know:
 - This program supports any unicode characters displayable
@@ -33,6 +33,8 @@ Enter/Space: Place character
 X/Backspace: Remove character
 
 i: Insert Mode (for entering text)
+
+g: Toggle Grid
 
 ENTER: Exit insert mode
 

@@ -5,6 +5,7 @@
 #include <codecvt>
 #include <climits>
 #include <cmath>
+#include <exception>
 #include "menu.h" //header for main menu
 
 void turn_on_ncurses() {
@@ -38,7 +39,7 @@ int main() {
         std::cout << "Your screen is not wide enough!\n";
         flag_fail = true;
     }
-    if (max_y < 30) {
+    if (max_y < 34) {
         std::cout << "Your screen is not tall enough!\n";
         flag_fail = true;
     }
@@ -58,10 +59,9 @@ int main() {
         choicefile >> std::ws;
         while (choicefile) {
             wchar_t nextchar = choicefile.get();
-            if (!isspace(nextchar) && !iscntrl(nextchar) && nextchar >= 0) choices.push_back(nextchar); //only accept valid chars
+            if (!iscntrl(nextchar) && nextchar >= 0) choices.push_back(nextchar); //only accept valid chars
         }
         if (!choices.size()) flag_fail = true;
-        std::cout << "Symbols loaded successfully!\n";
     }
     else flag_fail = true;
     if (flag_fail) {
@@ -70,21 +70,62 @@ int main() {
     }
     bool mapload = false;
     int x = 0, y = 0; //Stores position of user's cursor
-    std::cout << "\nControls:\nArrow keys: Traverse map\nW/S: change symbol up/down\nA/D: change symbol page up/down\nEnter/Space: Place character\nX/Backspace: Remove character\ni: Insert Mode (for entering text)\nESC(has delay)/ENTER(instant): Exit text mode"<< std::endl;
-    std::cout << "Enter the name of your map to load/create it" << std::endl;
-    std::cin >> mapname;
-    load_map.open(mapname);
-    load_map.imbue(std::locale(load_map.getloc(), new std::codecvt_utf8<wchar_t, 0x10ffff, std::consume_header>));
-    if (load_map.good()) mapload = true;
-    if (!mapload) {
-        std::cout << "\nMap under name/path \"" << mapname << "\" not found. New map created! Enter the new map size: x y, or 0 for default (100, 100): "; 
-        std::cin >> SIZE_x;
-        if (SIZE_x == 0) {
-            SIZE_x = 100;
-            SIZE_y = 100;
+    while(true) {
+    printw(" _   _  ____ _   _ ____  ____  _____ ____    __  __    _    ____\n| \\ | |/ ___| | | |  _ \\/ ___|| ____/ ___|  |  \\/  |  / \\  |  _ \\\n|  \\| | |   | | | | |_) \\___ \\|  _| \\___ \\  | |\\/| | / _ \\ | |_) |\n| |\\  | |___| |_| |  _ < ___) | |___ ___) | | |  | |/ ___ \\|  __/\n|_| \\_|\\____|\\___/|_| \\_\\____/|_____|____/  |_|  |_/_/   \\_\\_|\n __  __    _    _  _______ ____\n|  \\/  |  / \\  | |/ / ____|  _ \\\n| |\\/| | / _ \\ | ' /|  _| | |_) |\n| |  | |/ ___ \\| . \\| |___|  _ <\n|_|  |_/_/   \\_\\_|\\_\\_____|_| \\_\\\n");
+        std::string choice = menu({"Create Map", "Load Map", "Controls"});
+        if (choice == "Controls") {
+            printw("Controls:\nArrow keys: Traverse map\nW/S: change symbol up/down\nA/D: change symbol page up/down\nEnter/Space: Place character\nX/Backspace: Remove character\ni: Insert Mode (for entering text)\nESC(has delay)/ENTER(instant): Exit text mode\n");
+            cont();
+            continue;
         }
-        else std::cin >> SIZE_y;
-        if (!std::cin || SIZE_x < 0 || SIZE_y < 0) return 0;
+        else if (choice == "Create Map") {
+            mapname = userInput("Enter new map name");
+            std::string size_y, size_x;
+            while (true) {
+                size_y = userInput("Enter new map height");
+                try {
+                    SIZE_y = std::stoi(size_y);
+                }
+                catch (std::exception &e) {
+                    clear();
+                    printw("Invalid size!");
+                    continue;
+                }
+                if (SIZE_y < 1) {
+                    printw("Invalid size!");
+                    continue;
+                }
+                break;
+            }
+            while (true) {
+                size_x = userInput("Enter new map height");
+                try {
+                    SIZE_x = std::stoi(size_x);
+                }
+                catch (std::exception &e) {
+                    clear();
+                    printw("Invalid size!");
+                    continue;
+                }
+                if (SIZE_x < 1) {
+                    printw("Invalid size!");
+                    continue;
+                }
+                break;
+            }
+        }
+        else if (choice == "Load Map") {
+            mapname = userInput("Enter file name/path");
+            mapload = true;
+        }
+        load_map.open(mapname);
+        load_map.imbue(std::locale(load_map.getloc(), new std::codecvt_utf8<wchar_t, 0x10ffff, std::consume_header>));
+        if (mapload && !load_map.good()) { //if loading a new map that doesnt exist
+            printw("Map under name/path \"%s\" not found!", mapname.c_str());
+            cont();
+            continue;
+        }
+        break;
     }
     if (mapload) {
         bool gotx = false;
@@ -100,7 +141,7 @@ int main() {
             }
         }
         map.resize(SIZE_y);
-        for (auto &v : map) v.resize(SIZE_x, L'.'); //Resize 2d vector
+        for (auto &v : map) v.resize(SIZE_x, L' '); //Resize 2d vector
         load_map.close();
         load_map.open(mapname);
         for (int i = 0; i < SIZE_y; i++) {
@@ -112,20 +153,19 @@ int main() {
         load_map.close();
     }
     map.resize(SIZE_y);
-    for (auto &v : map) v.resize(SIZE_x, L'.'); //Resize 2d vector
+    for (auto &v : map) v.resize(SIZE_x, L' '); //Resize 2d vector
     int currchar = 0;
     int charpage = 0;
     int x_offset = 0, y_offset = 0; //how far user has rolled over the edge of the view window in x/y direction
     int ch; //holds character input
     bool insertmode = false;
-    system("clear");
-    turn_on_ncurses(); //start up ncurses
+    bool grid = true;
     while (true) { //editing loop
         ch = getch();
         charpage = currchar/10;
         //scrolling
         if (x - x_offset >= max_x - 40)
-           // x_offset = x - (max_x - 40) + 1;
+            // x_offset = x - (max_x - 40) + 1;
             x_offset++;
         if (x - x_offset < 0)
             x_offset--;
@@ -148,8 +188,8 @@ int main() {
         for (int i = 0; i < max_y; i++) { //Print map
             for (int j = 0; j < max_x - 40; j++) {
                 if (i < (int)map.size() && j < (int)map.at(i).size()) {
-                    if (map.at(i + y_offset).at(j + x_offset) == ' ')
-                        mvprintw(i, j, "%lc", '.');
+                    if (map.at(i + y_offset).at(j + x_offset) == L' ')
+                        mvprintw(i, j, "%lc", grid ? L'.' : L' ');
                     else
                         mvprintw(i, j, "%lc", map.at(i + y_offset).at(j + x_offset));
                 }
@@ -157,8 +197,10 @@ int main() {
         }
         mvprintw(23, max_x - 37, "Symbol Page: %i/%i  ", charpage+1, (int)ceil(choices.size()/10.0));
         mvprintw(25, max_x - 37, "x= %i/%i, y= %i/%i  ", x, SIZE_x-1, y, SIZE_y-1);
-        mvprintw(27, max_x - 37, "Press Q to save/quit");
-        mvprintw(29, max_x - 37, "Ctrl-C to quit without saving");
+        mvprintw(27, max_x - 37, "Press Q to Save/Quit");
+        mvprintw(29, max_x - 37, "Ctrl-C to Quit Without Saving");
+        if (!insertmode) mvprintw(31, max_x - 37, "i: Insert mode                    ");
+        mvprintw(33, max_x - 37, "g: Toggle Grid");
         move(y -  y_offset, x - x_offset); //move cursor to users location
         if (ch == KEY_UP) { //traversal
             y--;
@@ -196,11 +238,11 @@ int main() {
         else if ((ch == ' ' || ch == '\n') && !insertmode) { //Character placing
             map.at(y).at(x) = choices.at(currchar);
         }
-        else if (ch == KEY_BACKSPACE || ch == 'x' || ch == 'X') map.at(y).at(x) = L'.'; //Character clearing
+        else if (ch == KEY_BACKSPACE || ch == 'x' || ch == 'X') map.at(y).at(x) = L' '; //Character clearing
         else if (ch == 'i' && !insertmode) { //insert mode
             insertmode = true;
             attron(COLOR_PAIR(5));
-            mvprintw(31, max_x - 37, "*INSERT MODE* ENTER or ESC to exit");
+            mvprintw(31, max_x - 37, "*INSERT MODE* ENTER to exit");
             attroff(COLOR_PAIR(5));
             continue;
         }
@@ -221,14 +263,17 @@ int main() {
             insertmode = false;
             mvprintw(31, max_x - 37, "i: Insert mode                    ");
         }
-        if (insertmode && (isalnum(ch) || ch == ' ' || ch == KEY_BACKSPACE)) {
+        else if (!insertmode && ch == 'g') { //toggle grid
+            grid = !grid;
+        }
+        if (insertmode && (isalnum(ch) || ch == ' ' || ispunct(ch) || ch == KEY_BACKSPACE)) {
             if (ch == ' ') {
-                map.at(y).at(x) = L'.';
+                map.at(y).at(x) = L' ';
                 x++;
                 if (x >= SIZE_x) x--;
             }
             else if (ch == KEY_BACKSPACE) {
-                if (x > 0) map.at(y).at(x-1) = L'.';
+                if (x > 0) map.at(y).at(x-1) = L' ';
                 x--;
                 if (x < 0) x++;
             }
@@ -245,8 +290,7 @@ int main() {
     wof.imbue(std::locale(wof.getloc(), new std::codecvt_utf8<wchar_t, 0x10ffff, std::consume_header>));
     for (int i = 0; i < SIZE_y; i++) {
         for (int j = 0; j < SIZE_x; j++) {
-            if (map.at(i).at(j) == '.') wof.put(' ');
-            else wof.put(map.at(i).at(j));
+            wof.put(map.at(i).at(j));
             if (j == SIZE_x - 1) wof.put('\n');
         }
     }
