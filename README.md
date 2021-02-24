@@ -38,6 +38,8 @@ g: Toggle Grid
 
 ENTER: Exit insert mode
 
+f: Toggle draw mode (automatically places a character whenever you move, great for drawing lines of characters)
+
 Features including mouse support and a functioning menu coming soon
 
 Happy map making!

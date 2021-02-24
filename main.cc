@@ -39,7 +39,7 @@ int main() {
         std::cout << "Your screen is not wide enough!\n";
         flag_fail = true;
     }
-    if (max_y < 34) {
+    if (max_y < 36) {
         std::cout << "Your screen is not tall enough!\n";
         flag_fail = true;
     }
@@ -159,6 +159,7 @@ int main() {
     int x_offset = 0, y_offset = 0; //how far user has rolled over the edge of the view window in x/y direction
     int ch; //holds character input
     bool insertmode = false;
+    bool drawmode = false;
     bool grid = true;
     while (true) { //editing loop
         ch = getch();
@@ -200,7 +201,8 @@ int main() {
         mvprintw(27, max_x - 37, "Press Q to Save/Quit");
         mvprintw(29, max_x - 37, "Ctrl-C to Quit Without Saving");
         if (!insertmode) mvprintw(31, max_x - 37, "i: Insert mode                    ");
-        mvprintw(33, max_x - 37, "g: Toggle Grid");
+        if (!drawmode) mvprintw(33, max_x - 37, "f: Draw mode                        ");
+        mvprintw(35, max_x - 37, "g: Toggle Grid");
         move(y -  y_offset, x - x_offset); //move cursor to users location
         if (ch == KEY_UP) { //traversal
             y--;
@@ -235,7 +237,7 @@ int main() {
             currchar += (10 - currchar%10); //go forward one
             if ((size_t)currchar >= choices.size()) currchar = 0; //or wrap around
         }
-        else if ((ch == ' ' || ch == '\n') && !insertmode) { //Character placing
+        else if ((ch == ' ' || ch == '\n' || (drawmode && ch != 'f')) && !insertmode) { //Character placing
             map.at(y).at(x) = choices.at(currchar);
         }
         else if (ch == KEY_BACKSPACE || ch == 'x' || ch == 'X') map.at(y).at(x) = L' '; //Character clearing
@@ -245,6 +247,11 @@ int main() {
             mvprintw(31, max_x - 37, "*INSERT MODE* ENTER to exit");
             attroff(COLOR_PAIR(5));
             continue;
+        }
+        else if (ch == 'f' && !insertmode) {
+            drawmode = !drawmode;
+            if (drawmode) mvprintw(33, max_x - 37, "*DRAW MODE* f to exit      ");
+            else mvprintw(31, max_x - 37, "f: Draw mode                      ");
         }
         else if ((ch == 'q' || ch == 'Q') && !insertmode)  { //Save and quit
             curs_set(0);
