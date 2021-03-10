@@ -49,5 +49,11 @@ std::wifstream file; //has to be a wifstream
 file.open("Filename");
 file.imbue(std::locale(file.getloc(), new std::codecvt_utf8<wchar_t, 0x10ffff, std::consume_header>)); //just copy paste this line
 ```
+Also to print unicode chars
+```c++
+wchar_t unicode = L'♠'; //const wide-char literal
+printw("%lc", unicode); //lc for long-char
+```
+MAKE SURE YOU COMPILE WITH -lncursesw <- the w is for unicode support
 
 Happy map making!
