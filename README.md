@@ -44,6 +44,7 @@ Features including mouse support and a functioning menu coming soon
 
 FOR CSCI4X STUDENTS: How to read from a file with unicode
 ```c++
+#include <codecvt> //need this for the last line to work
 #include<fstream> //make sure file streams are included at the top of your code
 std::wifstream file; //has to be a wifstream
 file.open("Filename");
