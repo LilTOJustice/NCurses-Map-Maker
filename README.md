@@ -42,4 +42,18 @@ f: Toggle draw mode (automatically places a character whenever you move, great f
 
 Features including mouse support and a functioning menu coming soon
 
+FOR CSCI4X STUDENTS: How to read from a file with unicode
+```c++
+#include<fstream> //make sure file streams are included at the top of your code
+std::wifstream file; //has to be a wifstream
+file.open("Filename");
+file.imbue(std::locale(file.getloc(), new std::codecvt_utf8<wchar_t, 0x10ffff, std::consume_header>)); //just copy paste this line
+```
+Also to print unicode chars
+```c++
+wchar_t unicode = L'♠'; //const wide-char literal
+printw("%lc", unicode); //lc for long-char
+```
+MAKE SURE YOU COMPILE WITH -lncursesw <- the w is for unicode support
+
 Happy map making!
