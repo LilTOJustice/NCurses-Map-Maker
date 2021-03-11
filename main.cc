@@ -98,7 +98,7 @@ int main() {
                 break;
             }
             while (true) {
-                size_x = userInput("Enter new map height");
+                size_x = userInput("Enter new map width");
                 try {
                     SIZE_x = std::stoi(size_x);
                 }
